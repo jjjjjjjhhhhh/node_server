@@ -80,7 +80,21 @@ app.get('/getTypeData', async (req,res) => {
     }
 })
 
-
+app.get('/getDataInfo', async (req,res) => {
+    try{
+        const connect = await connectData();
+        console.log(req.query)
+        const userId = req.query.userId
+        const [rows, fields] = await connect.execute('SELECT * FROM fundraiser WHERE FUNDRAISER_ID = ?',[userId])
+        console.log(rows)
+        res.send({
+            code: 200,
+            data: rows
+        })
+    } catch (e) {
+        console.log(e)
+    }
+})
 
 app.listen(port,() => {
     console.log('------' + port)
