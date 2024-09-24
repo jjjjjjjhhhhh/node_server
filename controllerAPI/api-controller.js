@@ -1,12 +1,9 @@
-const express = require('express')
-const connectData = require('./crowdfunding_db');
-const path = require('path')
-const app = express();
-const port = 3000
+const express = require('express');  
+const router = express.Router(); 
+const connectData = require('../crowdfunding_db');
+const e = require('express');
 
-
-app.use(express.static(path.join(__dirname,'public')))
-app.get('/allData',async (req,res) => {
+async function getAllData(req, res) {
     try{
         const connect = await connectData();
         const [rows, fields] = await connect.execute('SELECT * FROM fundraiser')
@@ -18,9 +15,9 @@ app.get('/allData',async (req,res) => {
     } catch (e) {
         console.log(e)
     }
-})
+}
 
-app.get('/allTypeData',async (req,res) => {
+async function getAllTypeData(req, res) {
     try{
         const connect = await connectData();
         const [rows, fields] = await connect.execute('SELECT * FROM category')
@@ -32,9 +29,8 @@ app.get('/allTypeData',async (req,res) => {
     } catch (e) {
         console.log(e)
     }
-})
-
-app.get('/getProgress', async (req,res) => {
+}
+async function getProgress(req, res) {
     try{
         const connect = await connectData();
         const [rows, fields] = await connect.execute('SELECT * FROM fundraiser WHERE ACTIVE_CATEGORY_ID = 1')
@@ -44,11 +40,10 @@ app.get('/getProgress', async (req,res) => {
             data: rows
         })
     } catch (e) {
-        console.log(e)
-    }
-})
+        console.log(e)}
+}
 
-app.get('/getTypeData', async (req,res) => {
+async function getTypeData(req, res) {
     try{
         const connect = await connectData();
         let conditions = [];
@@ -78,24 +73,39 @@ app.get('/getTypeData', async (req,res) => {
     } catch (e) {
         console.log(e)
     }
-})
+}
 
-app.get('/getDataInfo', async (req,res) => {
+async function getDataInfo(req, res) {
     try{
         const connect = await connectData();
-        console.log(req.query)
+       
         const userId = req.query.userId
-        const [rows, fields] = await connect.execute('SELECT * FROM fundraiser WHERE FUNDRAISER_ID = ?',[userId])
-        console.log(rows)
-        res.send({
-            code: 200,
-            data: rows
-        })
+        console.log(userId)
+        if (userId) {
+            const [rows, fields] = await connect.execute('SELECT * FROM fundraiser WHERE FUNDRAISER_ID = ?',[userId])
+            console.log(rows)
+            res.send({
+                code: 200,
+                data: rows
+            })
+        } else {
+            res.send({
+                code: 400,
+                msg: 'Missing UserID'
+            })
+        }
+
     } catch (e) {
         console.log(e)
     }
-})
+}
 
-app.listen(port,() => {
-    console.log('------' + port)
-})
+
+
+router.get('/allData', getAllData); 
+router.get('/allTypeData', getAllTypeData); 
+router.get('/getProgress', getProgress);
+router.get('/getTypeData', getTypeData);
+router.get('/getDataInfo', getDataInfo);
+
+module.exports = router;
